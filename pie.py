@@ -63,9 +63,6 @@ def pie_chart(data: list[tuple[Any, ...]]) -> None:
 	plt.show()
 	plt.savefig("pie_chart.png")
 
-	if __name__ == "__main__" :
-		raise SystemExit(main())
-
 def main() -> int :
 	try:
 		#load the env variables using pathlib check later for requirements
@@ -85,3 +82,6 @@ def main() -> int :
 	except Exception as error:
 		print(f"ERROR: {error}", file=sys.stderr)
 		return 1
+
+if __name__ == "__main__" :
+	raise SystemExit(main())
