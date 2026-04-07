@@ -63,3 +63,38 @@ def is_sorted(values: list[float]) -> bool :
 		if values[value] > values[value + 1] :
 			return False
 	return True
+
+#calculate Popular standard deviation
+def get_std_population(values: list[float]) -> float
+	if not values:
+		return 0.0
+	m = get_mean(values)
+	sum_sq_diff = 0.0
+	for value in values:
+		sum_sq_diff += (value - m) ** 2
+	variance = sum_sq_diff / len(values)
+	return variance ** 0.5	
+
+#converts strings to float if found otherwise None if its invalid or non existent
+def gonvert_to_float(s: str | None) -> float | None:
+	try:
+		if s is None:
+			return None
+		r = s.strip()
+		if r.lower() in NONEXIST :
+			return None
+		r = float(r)
+		if math.isnan(r) or math.isinf(r):
+			return None
+		return r
+	except Exception:
+		return None
+
+
+def main() -> None:
+	return None
+
+
+if __name__ == "__main__":
+	main()
+
