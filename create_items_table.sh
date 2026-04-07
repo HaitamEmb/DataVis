@@ -31,7 +31,7 @@ psql -U $POSTGRES_USER -d $POSTGRES_DB -c "
 		brand		VARCHAR(255)
 	);
 	COPY items
-	FROM ''
+	FROM '/var/lib/postgresql/data/downloaded/item.csv'
 	DELIMITER ','
 	CSV HEADER
 	NULL AS '';

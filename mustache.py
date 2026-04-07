@@ -193,12 +193,12 @@ def plot_boxes(item_prices: list[float], basket_prices: list[float]) :
 			else:
 				user_sum[user] = user_total
 				user_count[user] = 1
-		average_baset_per_user: list[float] = []
+		average_basket_per_user: list[float] = []
 		for user in user_sum:
-			average_baset_per_user.append(user_sum[user] / float(user_count[user]))
+			average_basket_per_user.append(user_sum[user] / float(user_count[user]))
 		
 		print_stats(item_prices)
-		plot_boxes(item_prices, average_baset_per_user)
+		plot_boxes(item_prices, average_basket_per_user)
 		return 0
 	except Exception as error:
 		print(f"Error: {error}", file=sys.stderr)
@@ -206,4 +206,4 @@ def plot_boxes(item_prices: list[float], basket_prices: list[float]) :
 
 if __name__ == "__main__" :
 	raise SystemExit(main())
-			
+	

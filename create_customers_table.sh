@@ -1,7 +1,8 @@
 
 set -eux
 
-path=""
+path="data_test/data/"
+
 # Union query creating the table
 UNION_QUERY=""
 #file="test01.csv"
@@ -12,15 +13,24 @@ else
 	echo "No .env file, please make sure you make one";
 	exit 2;
 fi
+
+mkdir -p data_test/data && cd data_test/data
+
+wget https://cdn.intra.42.fr/document/document/33137/data_2023_feb.csv
+wget https://cdn.intra.42.fr/document/document/42145/subject.zip
+unzip subject.zip
+mv ./subject/customer/*
+mv ./subject/item/*
+rm -rf subject subject.zip
+
 #since I'm not using docker for this project
 #we will need to check for the presence of psql
-#we add it from the .env file but just to be sure
 if ! command -v psql &> /dev/null; then
-	echo "Error: psql is not installed" #add virtual env
+	echo "Error: psql is not installed"
 	exit 2
 fi
 
-for file in $path; do
+for file in data_test/data/data_202*.csv; do
 	#check for file if it exists
 	[ -e "$file" ] || continue
 	echo "psql detected. Processing the command..."
@@ -40,7 +50,7 @@ for file in $path; do
 		);
 		-- copy from csv to table
 		COPY $tablename -- change to \copy
-		FROM ''
+		FROM '/var/lib/postgresql/data/downloaded/$tablename.csv'
 		DELIMITER ','
 		CSV HEADER;
 	"
