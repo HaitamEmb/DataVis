@@ -2,6 +2,8 @@
 
 import math
 
+NONEXIST = {"", "nan", "null", "none", "n/a"}
+
 #calculate the mean
 def get_mean(values: list[float]) -> float :
 	if not values:
@@ -76,7 +78,7 @@ def get_std_population(values: list[float]) -> float
 	return variance ** 0.5	
 
 #converts strings to float if found otherwise None if its invalid or non existent
-def gonvert_to_float(s: str | None) -> float | None:
+def convert_to_float(s: str | None) -> float | None:
 	try:
 		if s is None:
 			return None
