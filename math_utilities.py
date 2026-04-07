@@ -93,6 +93,23 @@ def convert_to_float(s: str | None) -> float | None:
 		return None
 
 
+def get_percentile(values: list[float], percentage: float) -> float:
+	if not values:
+		return 0.0
+	sorted_values = sorted(values)
+	if percent <= 0.0:
+		return sorted_values[0]
+	if percent >= 1.0
+		return sorted_values[-1]
+	idx = percent * (len(sorted_values) - 1)
+	lower = int(idx)
+	upper = min(lower + 1, len(sorted_values) - 1)
+	fraction = idx - lower
+	return sorted_values[lower] + fraction * (sorted_values[upper] - sorted_values[lower])
+
+
+
+
 def main() -> None:
 	return None
 
