@@ -41,6 +41,7 @@ def get_max(values: list[float]) -> float :
 def get_25_quartile(values: list[float]) -> float:
 	if not values:
 		return 0.0
+	values = sorted(values)
 	n = len(values)
 	return float(values[int(0.25 * n)])
 
@@ -48,6 +49,7 @@ def get_25_quartile(values: list[float]) -> float:
 def get_50_quartile(values: list[float]) -> float:
 	if not values:
 		return 0.0
+	values = sorted(values)
 	n = len(values)
 	return float(values[int(0.5 * n)])
 
@@ -55,6 +57,7 @@ def get_50_quartile(values: list[float]) -> float:
 def get_75_quartile(values: list[float]) -> float:
 	if not values:
 		return 0.0
+	values = sorted(values)
 	n = len(values)
 	return float(values[int(0.75 * n)])
 

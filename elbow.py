@@ -15,6 +15,70 @@ import os
 import sys
 
 
+
+def get_data() -> list[tuple[Any, ...]] :
+	
+	con = None
+	cur = None
+	#we connect to our databse using the python postgress library psycopg2
+	#return list of tuples with key and value, to show what people do on the site
+	#(the event_type) and how many times, (count). ieg : (view, 1000), (purchase, 20) etc...
+
+	#use try finally to open cursor and close it afterwards 
+	try :
+		#connect to database
+		con = psycopg2.connect(
+			host="localhost",
+			port='5432',	#to check
+			database=os.getenv("POSTGRES_DB"),
+			user=os.getenv("POSTGRES_USER"),
+			password=os.getenv("POSTGRES_PASSWORD"),
+		)
+
+		# We create a cursor object to run SQL commands
+		cur = con.cursor()
+
+		# Run commands to select data by event_type
+		cmd: str = "SELECT price, user_id FROM customers WHERE event_type == 'purchase'"
+		cur.execute(cmd)
+
+		#fetch the data selected
+		result = cur.fetchall()
+		return result
+
+	except Exception as error:
+		print(f"ERROR: {error}", file=sys.stderr)
+		sys.exit(2)
+	finally:
+		if cur:
+			cur.close()
+		if con:
+			con.close()
+
+
+
+def score_normalization(vectors: list[tuple[float, float]]) -> list[tuple[float, float]] :
+	
+	freq: list[float] = []
+	spend: list[float] = []
+	for vector in vectors:
+		freq.append(vector[0])
+		spend.append(vector[1])
+	freq_mean: float = get_mean(freq)
+	spend_mean: float = get_mean(spend)
+	freq_std: float = get_std_population(freq)
+	spend_std: float = get_std_population(spend)
+	if freq_std == 0.0:
+		freq_std = 1.0
+	if spend_std == 0.0:
+		spend_std = 1.0
+	z_vectors: list[tuple[float, float]] = []
+	for vector in vectors:
+		z_freq: float = (vector[0] - freq_mean) / freq_std
+		z_spend: float = (vector[1] - spend_mean) / spend_std
+		z_vectors.append((z_freq, z_spend))
+	return z_vectors
+
 def build_data(data: list[tuple[Any, ...]]) -> list[tuple[float, float]]:
 	if not data:
 		print("No data", file=sys.stderr)
@@ -36,7 +100,7 @@ def build_data(data: list[tuple[Any, ...]]) -> list[tuple[float, float]]:
 	spend = result["total_spend_per_user"].tolist()
 	for i in range(len(freq)):
 		customers_vec.append((float(freq[i]), float(spend[i])))
-
+	return customers_vec
 #we get the k-Means inertia by comuting the sum of squared errors
 def get_kmeans(points: list[tuple[float, float]], k:int) -> float:
 	#we need to randomly generate k points
@@ -101,8 +165,7 @@ def get_kmeans(points: list[tuple[float, float]], k:int) -> float:
 		origin_point = origin_points[assignments[point_idx]]
 		inertia_value += get_squared_distance(points{point_idx}, origin_point)
 		point_idx += 1
-	return inertia_value
-			
+	return inertia_value			
 #the optimal k value is the point where the error starts leveling off
 #to determine the k number we need to calculate the longest perpendicular distance between
 #point in the graph and the line connecting between the head (1, inertia[1]) and tail (k, inertia[k]) of the graph.
@@ -150,7 +213,6 @@ def find_k_value(z_vectors: list[tuple[float, float]]) -> tuple[list[int], list[
 		k_idx += 1
 	return (x_values, inertia_values, best_k_idx + 1)
 
-
 def plot_elbow(x_values: list[int], y_values: list[float], k: int) -> None:
 	
 	plt.figure(figsize=(16, 9))
@@ -166,6 +228,30 @@ def plot_elbow(x_values: list[int], y_values: list[float], k: int) -> None:
 	plt.show()
 	plt.close()
 
-
+def main() -> int:
+	try:
+		env_path = path(__file__).resolve().parent / ".env"
+		load_dotenv(
+			dotenv_path=env_path
+		)
+		if (
+			not os.getenv("POSTGRES_DB")
+			or not os.getenv("POSTGRES_USER")
+			or not os.getenv("POSTGRES_PASSWORD")
+		) :
+			print("Error env variables must be set", file=sys.stderr)
+			sys.exit(2)
+		data = get_data()
+		customers_vec = build_data(data)
+		norm_vectors = score_normalization(customers_vec)
+		x_values, inertia_values, closest_k = find_k_value(norm_vectors)
+		plot_elbow(x_values, inertia_values, closest_k)
+		return 0
+	except Exception as error:
+		print(f"ERROR: {error}", file=sys.stderr)
+		return 1
+	
+	if __name__ == "__main__":
+		raise SystemExit(main())
 
 	
