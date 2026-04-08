@@ -6,12 +6,10 @@ import os
 import panda as pd
 from dotenv import load_dotenv
 from typing import Any
-from math_utilities import convert_to_float, get_percentile
+from math_utilities import convert_to_float, get_percentile, round_to_multiple
 
 #we tasked to create two histograms, one for number of orders according to frequency
 #another for money spent on the site by customers
-
-def get_data() -> list[tuple[Any, ...]]:
 
 #get data from the database
 def get_data() -> list[tuple[Any, ...]] :
@@ -150,4 +148,3 @@ def main() -> int:
 
 if __name__ == "__main__" :
 	raise SystemExit(main())
-

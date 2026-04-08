@@ -7,13 +7,35 @@
 
 from __future__ import annotations
 import random
-from math_utilities import get_squared_distance, get_percentile, convert_to_float, get_mean, get_std_population
+from math_utilities import get_squared_distance, get_percentile, convert_to_float, get_mean, get_std_population, get_percentile
 from typing import Any
 import psycopg2
 import matplotlib.pyplot as plt
 import os
 import sys
 
+
+def build_data(data: list[tuple[Any, ...]]) -> list[tuple[float, float]]:
+	if not data:
+		print("No data", file=sys.stderr)
+		return
+	customers_vec: list[tuple[float, float]] = []
+	order_count_per_user: dict[str, int]={}
+	total_spend_per_user: dict[str, float]={}
+
+	df = pd.DataFrame(data, columns=['price', 'user_id'])
+	df['price'] = df['price'].apply(convert_to_float)
+	result = df.groupby('user_id')['price'].agg(
+		order_count_per_user='count',
+		total_spend_per_user='sum'
+	)
+	freq: list[float] = []
+	spend: list[float] = []
+
+	freq = result["order_count_per_user"].tolist()
+	spend = result["total_spend_per_user"].tolist()
+	for i in range(len(freq)):
+		customers_vec.append((float(freq[i]), float(spend[i])))
 
 #we get the k-Means inertia by comuting the sum of squared errors
 def get_kmeans(points: list[tuple[float, float]], k:int) -> float:
@@ -127,6 +149,7 @@ def find_k_value(z_vectors: list[tuple[float, float]]) -> tuple[list[int], list[
 			best_k_idx = k_idx
 		k_idx += 1
 	return (x_values, inertia_values, best_k_idx + 1)
+
 
 def plot_elbow(x_values: list[int], y_values: list[float], k: int) -> None:
 	
