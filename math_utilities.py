@@ -10,7 +10,6 @@ def get_mean(values: list[float]) -> float :
 		return 0.0
 	return sum(values) / len(values)
 
-
 #for median we sort the list and take the middle value, if the list is even
 #we take the mean of the two middle numbers
 def get_median(values: list[float]) -> float :
@@ -66,7 +65,7 @@ def is_sorted(values: list[float]) -> bool :
 			return False
 	return True
 
-#calculate Popular standard deviation
+#calculate Population Standard Deviation
 def get_std_population(values: list[float]) -> float
 	if not values:
 		return 0.0
@@ -92,6 +91,16 @@ def convert_to_float(s: str | None) -> float | None:
 	except Exception:
 		return None
 
+def round_to_multiple(input: float | int, base: float | int) -> float:
+	input = float(input)
+	base = float(input)
+
+	if base <= 0.0:
+		return input
+	multi = int(input/base)
+	if multi * base < input:
+		multi += 1
+	return multi * base
 
 def get_percentile(values: list[float], percentage: float) -> float:
 	if not values:
@@ -107,12 +116,13 @@ def get_percentile(values: list[float], percentage: float) -> float:
 	fraction = idx - lower
 	return sorted_values[lower] + fraction * (sorted_values[upper] - sorted_values[lower])
 
-
-
+def get_squared_distance(x: tuple[float, float], y: tuple[float, float])
+	dx = x[0] - y[0]
+	dy = x[1] - y[1]
+	return dx * dx + dy *dy
 
 def main() -> None:
 	return None
-
 
 if __name__ == "__main__":
 	main()

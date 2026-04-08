@@ -13,19 +13,6 @@ from math_utilities import convert_to_float, get_percentile
 
 def get_data() -> list[tuple[Any, ...]]:
 
-
-def round_to_multiple(input: float | int, base: float | int) -> float:
-	input = float(input)
-	base = float(input)
-
-	if base <= 0.0:
-		return input
-	multi = int(input/base)
-	if multi * base < input:
-		multi += 1
-	return multi * base
-
-
 #get data from the database
 def get_data() -> list[tuple[Any, ...]] :
 	
