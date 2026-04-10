@@ -1,4 +1,4 @@
-
+#!/usr/bin/env bash
 set -eux
 
 path="data_test/data/"
@@ -19,8 +19,8 @@ mkdir -p data_test/data && cd data_test/data
 wget https://cdn.intra.42.fr/document/document/33137/data_2023_feb.csv
 wget https://cdn.intra.42.fr/document/document/42145/subject.zip
 unzip subject.zip
-mv ./subject/customer/*
-mv ./subject/item/*
+mv ./subject/customer/* .
+mv ./subject/item/* .
 rm -rf subject subject.zip
 
 #since I'm not using docker for this project
