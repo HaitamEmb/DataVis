@@ -26,7 +26,7 @@ fclean:
 
 
 login:
-	postgresql sh -c 'psql -U $$POSTGRES_USER -d $$POSTGRES_DBB -W'
+	postgresql sh -c 'psql -U $$POSTGRES_USER -d $$POSTGRES_DB -W'
 
 customers:
 	-@chmod +x ./create_customers_table.sh
