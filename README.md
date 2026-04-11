@@ -48,6 +48,7 @@ Before running this pipeline, ensure your local environment meets the following 
 * **Python 3.8+**: The core logic uses f-strings and type hinting available in modern Python versions.
 * **PostgreSQL (v12+)**: A local PSQL instance must be running. You will need `createdb` permissions to initialize the schemas.
 * **Bash/Unix Shell**: The automation scripts (`.sh` files) and the `Makefile` are designed for Unix-based environments (Linux, macOS, or WSL on Windows).
+* **Dbeaver**: For visualization (optional)
 
 ### 2. System Tools
 * **Make**: Used to run the `Makefile` commands.
@@ -55,7 +56,6 @@ Before running this pipeline, ensure your local environment meets the following 
 
 ### 3. Database Access
 You must have a PostgreSQL user with the following capabilities:
-* Ability to create tables and execute `COPY` commands for data ingestion.
 * Connectivity via `localhost` (ensure your `pg_hba.conf` allows local connections).
 
 ### 4. Environment Variables
@@ -95,6 +95,8 @@ This command :
 
 ### 4. Visualizations
 ```bash
+source .venv/bin/activate
+
 make pie #Generates pie charts for event distribution
 make chart #Generates standard data visualizations
 make mustache #Generates Box Plots
@@ -105,7 +107,7 @@ make elbow #Generates Elbow Method graph
 ## Project Highlights
 * ```math_utilities.py``` is a custom statistics library implemented from scratch, covering each of the Mean, variance, population standard deviation, quartiles, percentiles, min, max etc...
 * ```elbow.py``` implements a custom K-Means algorithm.
-* Automated ETL pipeline 
+* Automated ETL pipeline
 
 ## Cleanup
 ```bash

@@ -63,6 +63,7 @@ def building(data: list[tuple[Any, ...]], bins: int) -> None:
 
 	df = pd.DataFrame(data, columns=['price', 'user_id'])
 	df['price'] = df['price'].apply(convert_to_float)
+	print("df price", df['price'])
 	result = df.groupby('user_id')['price'].agg(
 		order_count_per_user='count',
 		total_spend_per_user='sum'

@@ -13,12 +13,12 @@ echo "Loading and creating items table"
 
 #check for psql
 
-if !command -v psql &> /dev/null; then
-	echo "Error: psql is not installed!"
-	exit 2;
-else
-	echo "Creating..."
-fi
+# if ! command -v psql &> /dev/null; then
+# 	echo "Error: psql is not installed!"
+# 	exit 2;
+# else
+# 	echo "Creating..."
+# fi
 
 #load and create items table
 
@@ -30,11 +30,6 @@ psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "
 		category_code	TEXT,
 		brand		VARCHAR(255)
 	);
-	--COPY items
-	--FROM '/var/lib/postgresql/data/downloaded/item.csv'
-	--DELIMITER ','
-	--CSV HEADER
-	--NULL AS '';
 "
 psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "\copy items FROM 'data_test/data/item.csv' DELIMITER ',' CSV HEADER NULL AS '';"
 #check items and customers are existant before fusion

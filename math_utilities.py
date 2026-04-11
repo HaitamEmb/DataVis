@@ -3,7 +3,7 @@
 
 import math
 
-NONEXIST = {"", "nan", "null", "none", "n/a"}
+NONEXIST = {"", "nan", "null", "none"}
 
 #calculate the mean
 def get_mean(values: list[float]) -> float :
@@ -82,18 +82,19 @@ def get_std_population(values: list[float]) -> float :
 
 #converts strings to float if found otherwise None if its invalid or non existent
 def convert_to_float(s: str | None) -> float | None:
-	try:
-		if s is None:
-			return None
-		r = s.strip()
-		if r.lower() in NONEXIST :
-			return None
-		r = float(r)
-		if math.isnan(r) or math.isinf(r):
-			return None
-		return r
-	except Exception:
+	# try:
+	if s is None:
 		return None
+	r = str(s).strip()
+	if r.lower() in NONEXIST :
+		return None
+	r = r.replace('$', '').replace(",", "")
+	r = float(r)
+	if math.isnan(r) or math.isinf(r):
+		return None
+	return r
+	# except Exception:
+	# 	return None
 
 def round_to_multiple(input: float | int, base: float | int) -> float:
 	input = float(input)

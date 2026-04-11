@@ -22,10 +22,6 @@ fclean:
 	-@rm -rf data/
 	-@rm -rf data_test/
 
-
-
-
-
 login:
 	postgresql sh -c 'psql -U $$POSTGRES_USER -d $$POSTGRES_DB -W'
 
@@ -42,14 +38,13 @@ fusion:
 	./create_items_table.sh
 
 setup_env:
-	-@mkdir -p data/data_proj
 	-@chmod +x ./env_setup.sh
 	./env_setup.sh
 
 setup_db:
 	-@echo "Database creating..."
-	-@chmod +x create_customers_table.sh dup_remove.sh create_items_table.sh
-	./create_customers_table.sh && ./dup_remove.sh && ./create_items_table.sh
+	-@chmod +x create_customers_table.sh create_items_table dup_remove.sh
+	./create_customers_table.sh && ./create_items_table.sh && ./dup_remove.sh
 	-@echo "Database is created."
 
 prep: setup_env setup_db
@@ -69,6 +64,10 @@ building:
 elbow:
 	-@chmod +x ./elbow.py
 	./elbow.py
+
+mustache:
+	-@chmod +x ./mustache.py
+	./mustache.py
 
 re: fclean all
 	
