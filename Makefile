@@ -14,6 +14,7 @@ fclean:
 	-@rm -rf data/data_proj/data_test/data/*.csv
 	-@rm -rf data/data_proj/data_test/data/*/*.csv
 	-@rm -rf data/data_proj/data_test/data/*.png
+	-@rm -rf *.png
 	-@rm -rf .venv
 	-@rm -rf __pycache__ srcs/dist
 	-@rm -rf srcs/dist

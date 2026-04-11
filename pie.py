@@ -1,7 +1,9 @@
+#!/usr/bin/env python3
 from __future__ import annotations
-from pathlib import path
+from pathlib import Path
 import psycopg2
 import os
+import sys
 import matplotlib.pyplot as plt
 from typing import Any
 from dotenv import load_dotenv
@@ -23,7 +25,7 @@ def get_data() -> list[tuple[Any, ...]] :
 			port='5432',	#to check
 			database=os.getenv("POSTGRES_DB"),
 			user=os.getenv("POSTGRES_USER"),
-			password=os.getenv("POSTGRES_PASSWORD"),
+			password=os.getenv("PGPASSWORD"),
 		)
 
 		# We create a cursor object to run SQL commands
@@ -49,7 +51,7 @@ def get_data() -> list[tuple[Any, ...]] :
 def pie_chart(data: list[tuple[Any, ...]]) -> None:
 	#We use matplotlib to create a visual representation of the pie chart
 	#and save it as png
-
+	print("creating...")
 	if not data:
 		print("Can't create chart without valid data", file=sys.stderr)
 	#retrieve the key / value pair
@@ -66,14 +68,14 @@ def pie_chart(data: list[tuple[Any, ...]]) -> None:
 def main() -> int :
 	try:
 		#load the env variables using pathlib check later for requirements
-		env_path = path(__file__).resolve().parent / ".env"
+		env_path = Path(__file__).resolve().parent / ".env"
 		load_dotenv(
 			dotenv_path=env_path
 		)
 		if (
 			not os.getenv("POSTGRES_DB")
 			or not os.getenv("POSTGRES_USER")
-			or not os.getenv("POSTGRES_PASSWORD")
+			or not os.getenv("PGPASSWORD")
 		) :
 			print("Error env variables must be set", file=sys.stderr)
 			sys.exit(2)

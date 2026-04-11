@@ -1,3 +1,4 @@
+
 #Functions that calculate the mean, median, min, max, first, second and third quartiles
 
 import math
@@ -69,7 +70,7 @@ def is_sorted(values: list[float]) -> bool :
 	return True
 
 #calculate Population Standard Deviation
-def get_std_population(values: list[float]) -> float
+def get_std_population(values: list[float]) -> float :
 	if not values:
 		return 0.0
 	m = get_mean(values)
@@ -105,13 +106,13 @@ def round_to_multiple(input: float | int, base: float | int) -> float:
 		multi += 1
 	return multi * base
 
-def get_percentile(values: list[float], percentage: float) -> float:
+def get_percentile(values: list[float], percent: float) -> float:
 	if not values:
 		return 0.0
 	sorted_values = sorted(values)
 	if percent <= 0.0:
 		return sorted_values[0]
-	if percent >= 1.0
+	if percent >= 1.0:
 		return sorted_values[-1]
 	idx = percent * (len(sorted_values) - 1)
 	lower = int(idx)
@@ -119,7 +120,7 @@ def get_percentile(values: list[float], percentage: float) -> float:
 	fraction = idx - lower
 	return sorted_values[lower] + fraction * (sorted_values[upper] - sorted_values[lower])
 
-def get_squared_distance(x: tuple[float, float], y: tuple[float, float])
+def get_squared_distance(x: tuple[float, float], y: tuple[float, float]) -> float :
 	dx = x[0] - y[0]
 	dy = x[1] - y[1]
 	return dx * dx + dy *dy

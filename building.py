@@ -1,9 +1,11 @@
+#!/usr/bin/env python3
 from __future__ import annotations
 import matplotlib.pyplot as plt
 import sys
 import psycopg2
 import os
-import panda as pd
+import pandas as pd
+from pathlib import Path
 from dotenv import load_dotenv
 from typing import Any
 from math_utilities import convert_to_float, get_percentile, round_to_multiple
@@ -28,14 +30,14 @@ def get_data() -> list[tuple[Any, ...]] :
 			port='5432',	#to check
 			database=os.getenv("POSTGRES_DB"),
 			user=os.getenv("POSTGRES_USER"),
-			password=os.getenv("POSTGRES_PASSWORD"),
+			password=os.getenv("PGPASSWORD"),
 		)
 
 		# We create a cursor object to run SQL commands
 		cur = con.cursor()
 
 		# Run commands to select data by event_type
-		cmd: str = "SELECT price, user_id FROM customers WHERE event_type == 'purchase'"
+		cmd: str = "SELECT price, user_id FROM customers WHERE event_type = 'purchase'"
 		cur.execute(cmd)
 
 		#fetch the data selected
@@ -91,7 +93,7 @@ def building(data: list[tuple[Any, ...]], bins: int) -> None:
 	#using histogram to plot the charts
 	plt.figure(figsize=(16, 9))
 	plt.xlabel("frequency")
-	plt.ylabel("custoers")
+	plt.ylabel("customers")
 	plt.hist(
 		freq,
 		bins=bins,
@@ -129,14 +131,14 @@ def building(data: list[tuple[Any, ...]], bins: int) -> None:
 
 def main() -> int:
 	try:
-		env_path = path(__file__).resolve().parent / ".env"
+		env_path = Path(__file__).resolve().parent / ".env"
 		load_dotenv(
 			dotenv_path=env_path
 		)
 		if (
 			not os.getenv("POSTGRES_DB")
 			or not os.getenv("POSTGRES_USER")
-			or not os.getenv("POSTGRES_PASSWORD")
+			or not os.getenv("PGPASSWORD")
 		) :
 			print("Error env variables must be set", file=sys.stderr)
 			sys.exit(2)

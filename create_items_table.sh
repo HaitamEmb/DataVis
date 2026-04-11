@@ -22,20 +22,21 @@ fi
 
 #load and create items table
 
-psql -U $POSTGRES_USER -d $POSTGRES_DB -c "
+psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "
 	DROP TABLE IF EXISTS items;
 	CREATE TABLE IF NOT EXISTS items (
-		product-id	INTEGER,
+		product_id	INTEGER,
 		category_id	BIGINT,
 		category_code	TEXT,
 		brand		VARCHAR(255)
 	);
-	COPY items
-	FROM '/var/lib/postgresql/data/downloaded/item.csv'
-	DELIMITER ','
-	CSV HEADER
-	NULL AS '';
+	--COPY items
+	--FROM '/var/lib/postgresql/data/downloaded/item.csv'
+	--DELIMITER ','
+	--CSV HEADER
+	--NULL AS '';
 "
+psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "\copy items FROM 'data_test/data/item.csv' DELIMITER ',' CSV HEADER NULL AS '';"
 #check items and customers are existant before fusion
 
 psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "
@@ -57,7 +58,7 @@ psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "
 #If we ever have a case empty or missing, we will not get rid off the whole remaining info
 #it will be retained.
 
-psql -U "$POSTGRESS_USER" -d "$POSTGRESS_DB" -c "
+psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "
 
 	DROP TABLE IF EXISTS fusion_table;
 	--make a temp table with the joined data

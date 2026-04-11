@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 #Elbow graph, is used to determine the right K number for K-Means clustering.
 #The K-means Clustering consists of finding the right number of clusters that
 #the dataset should be "clusterd" to. We use an approach consisitng of randomly 
@@ -11,9 +13,11 @@ from math_utilities import get_squared_distance, get_percentile, convert_to_floa
 from typing import Any
 import psycopg2
 import matplotlib.pyplot as plt
+from pathlib import Path
+from dotenv import load_dotenv
+import pandas as pd
 import os
 import sys
-
 
 
 def get_data() -> list[tuple[Any, ...]] :
@@ -32,14 +36,14 @@ def get_data() -> list[tuple[Any, ...]] :
 			port='5432',	#to check
 			database=os.getenv("POSTGRES_DB"),
 			user=os.getenv("POSTGRES_USER"),
-			password=os.getenv("POSTGRES_PASSWORD"),
+			password=os.getenv("PGPASSWORD"),
 		)
 
 		# We create a cursor object to run SQL commands
 		cur = con.cursor()
 
 		# Run commands to select data by event_type
-		cmd: str = "SELECT price, user_id FROM customers WHERE event_type == 'purchase'"
+		cmd: str = "SELECT price, user_id FROM customers WHERE event_type = 'purchase'"
 		cur.execute(cmd)
 
 		#fetch the data selected
@@ -88,7 +92,8 @@ def build_data(data: list[tuple[Any, ...]]) -> list[tuple[float, float]]:
 	total_spend_per_user: dict[str, float]={}
 
 	df = pd.DataFrame(data, columns=['price', 'user_id'])
-	df['price'] = df['price'].apply(convert_to_float)
+	print("freq", df['price'])
+	#df['price'] = df['price'].apply(convert_to_float)
 	result = df.groupby('user_id')['price'].agg(
 		order_count_per_user='count',
 		total_spend_per_user='sum'
@@ -98,6 +103,7 @@ def build_data(data: list[tuple[Any, ...]]) -> list[tuple[float, float]]:
 
 	freq = result["order_count_per_user"].tolist()
 	spend = result["total_spend_per_user"].tolist()
+	
 	for i in range(len(freq)):
 		customers_vec.append((float(freq[i]), float(spend[i])))
 	return customers_vec
@@ -115,18 +121,22 @@ def get_kmeans(points: list[tuple[float, float]], k:int) -> float:
 	origin_points: list[tuple[float, float]] = []
 	origin_points_idx = 0
 	#we determine the orig_pts by adding them to the list of origpts
-	while origine_points_idx < k :
+	print("while 1")
+	while origin_points_idx < k :
 		origin_points.append(random_points[origin_points_idx])
+		print("closeset ", random_points[origin_points_idx])
 		origin_points_idx += 1
 	#we label each point close to the orig_pt respectively
 	assignments: list[int] = [0] * len(points)
 	i_idx = 0
+	print("while 2")
 	while i_idx < 25 : #thats K means max iteration number
 		point_idx = 0
 		while point_idx < len(points) :
 			point = points[point_idx]
 			closest_cluster_idx = 0
 			closest_dist : float = get_squared_distance(point, origin_points[0])
+			#print("closeset ", closest_dist)
 			cluster_idx = 1
 			while cluster_idx < k:
 				current_dist = get_squared_distance(point, origin_points[cluster_idx])
@@ -134,12 +144,12 @@ def get_kmeans(points: list[tuple[float, float]], k:int) -> float:
 					closest_dist = current_dist
 					closest_cluster_idx = cluster_idx
 				cluster_idx += 1
-				assignments[point_idx] = closest_cluster_idx
-				point_idx += 1
+			assignments[point_idx] = closest_cluster_idx
+			point_idx += 1
 		#
 		sum_x: list[float] = [0.0] * k
 		sum_y: list[float] = [0.0] * k
-		amount_per_cluster: list[int] = [0] * K
+		amount_per_cluster: list[int] = [0] * k
 		point_idx = 0
 		while point_idx < len(points):
 			cluster_id: int = assignments[point_idx]
@@ -151,7 +161,7 @@ def get_kmeans(points: list[tuple[float, float]], k:int) -> float:
 		cluster_idx = 0
 		while cluster_idx < k:
 			if amount_per_cluster[cluster_idx] == 0:
-				new_orig_pts.append(random_points[randomize.randrange(0. len(random_points))])
+				new_orig_pts.append(random_points[randomize.randrange(0, len(random_points))])
 			else :
 				cx: float = sum_x[cluster_idx] / float(amount_per_cluster[cluster_idx])
 				cy: float = sum_y[cluster_idx] / float(amount_per_cluster[cluster_idx])
@@ -161,9 +171,11 @@ def get_kmeans(points: list[tuple[float, float]], k:int) -> float:
 		origin_points = new_orig_pts
 	inertia_value: float = 0.0
 	point_idx = 0
+	
 	while point_idx < len(points) :
+		#print("second while points: ", origin_points[assignments[point_idx]])
 		origin_point = origin_points[assignments[point_idx]]
-		inertia_value += get_squared_distance(points{point_idx}, origin_point)
+		inertia_value += get_squared_distance(points[point_idx], origin_point)
 		point_idx += 1
 	return inertia_value			
 #the optimal k value is the point where the error starts leveling off
@@ -173,25 +185,26 @@ def find_k_value(z_vectors: list[tuple[float, float]]) -> tuple[list[int], list[
 	
 	#we get the x and y values and "draw the line"
 	x_values: list[int] = []
-	inertia_values: list[int] = []
+	y_values: list[int] = []
 	k = 1
 	#I choose a K max to be 7
 	while k <= 7:
 		one_inertia_value = get_kmeans(z_vectors, k)
+		print("one ", one_inertia_value)
 		#x 
 		x_values.append(k)
 		#y
-		inertia_values.append(one_inertia_value)
+		y_values.append(one_inertia_value)
 		k += 1
-	n = len(inertia_values)
+	n = len(y_values)
 	if n < 3:
 		print("Error: invalid values", file=sys.stderr)
 		sys.exit(3)
 	#head and tail coordinates of the straight line
 	head_x = float(x_values[0])
 	tail_x = float(x_values[-1])
-	head_y = float(inertia_values[0])
-	tail_y = float(inertia_values[-1])
+	head_y = float(y_values[0])
+	tail_y = float(y_values[-1])
 	#derivative of whole line
 	line_dx = tail_x - head_x
 	line_dy = tail_y - head_y
@@ -205,53 +218,57 @@ def find_k_value(z_vectors: list[tuple[float, float]]) -> tuple[list[int], list[
 	k_idx = 1
 	while k_idx < n - 1:
 		px = float(k_idx + 1)
-		py = inertia_values[k_idx]
+		py = y_values[k_idx]
 		distance = (abs(line_dy * px - line_dx * py + tail_x * head_y - tail_y * head_x) / line_len)
 		if distance > best_distance:
 			best_distance = distance
 			best_k_idx = k_idx
 		k_idx += 1
-	return (x_values, inertia_values, best_k_idx + 1)
+	return (x_values, y_values, best_k_idx + 1)
 
 def plot_elbow(x_values: list[int], y_values: list[float], k: int) -> None:
-	
+
+	print("plotting...")
 	plt.figure(figsize=(16, 9))
 	plt.plot(x_values, y_values)
 	plt.xlabel("Number of clusters (k)")
 	plt.ylabel("Inertia sse")
 	plt.title("Elbow Method")
 	plt.axvline(float(k), linestyle="-", alpha=0.6)
-	plt.text(float(k) + 0.1, inertia_values[0] * 0.9, f"k = {k}")
-	plt.xticks(k_values)
+	plt.text(float(k) + 0.1, y_values[0] * 0.9, f"k = {k}")
+	plt.xticks(x_values)
+	plt.yticks(y_values)
 	plt.tight_layout()
 	plt.savefig("elbow.png")
 	plt.show()
 	plt.close()
 
 def main() -> int:
+	print("starting...")
 	try:
-		env_path = path(__file__).resolve().parent / ".env"
+		env_path = Path(__file__).resolve().parent / ".env"
 		load_dotenv(
 			dotenv_path=env_path
 		)
 		if (
 			not os.getenv("POSTGRES_DB")
 			or not os.getenv("POSTGRES_USER")
-			or not os.getenv("POSTGRES_PASSWORD")
+			or not os.getenv("PGPASSWORD")
 		) :
 			print("Error env variables must be set", file=sys.stderr)
 			sys.exit(2)
 		data = get_data()
 		customers_vec = build_data(data)
+		#print("customers_vec", customers_vec)
 		norm_vectors = score_normalization(customers_vec)
-		x_values, inertia_values, closest_k = find_k_value(norm_vectors)
-		plot_elbow(x_values, inertia_values, closest_k)
+		x_values, y_values, closest_k = find_k_value(norm_vectors)
+		plot_elbow(x_values, y_values, closest_k)
 		return 0
 	except Exception as error:
 		print(f"ERROR: {error}", file=sys.stderr)
 		return 1
 	
-	if __name__ == "__main__":
-		raise SystemExit(main())
+if __name__ == "__main__":
+	raise SystemExit(main())
 
 	

@@ -1,7 +1,7 @@
 set -eux
 
 if [ -f ./.env ]; then
-	export $(grep -v "^#" | xargs)
+	export $(grep -v "^#" ./.env | xargs)
 else
 	echo "No .env file found, please create one.";
 	exit 2;
@@ -11,7 +11,7 @@ echo "Removing duplicates..."
 
 # we need to delete duplicates and 1-second interval matches using DELETE statement
 # I'm using ctid as a way to distinct between two duplicates for removal
-psq -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "
+psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "
 
 	DELETE FROM customers
 	WHERE ctid IN (

@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -eux
-
 path="data_test/data/"
-
 # Union query creating the table
 UNION_QUERY=""
 #file="test01.csv"
@@ -14,14 +12,18 @@ else
 	exit 2;
 fi
 
-mkdir -p data_test/data && cd data_test/data
+if [ -d "data_test" ]; then
+	echo Data present
+else
+	mkdir -p data_test/data && cd data_test/data
 
-wget https://cdn.intra.42.fr/document/document/33137/data_2023_feb.csv
-wget https://cdn.intra.42.fr/document/document/42145/subject.zip
-unzip subject.zip
-mv ./subject/customer/* .
-mv ./subject/item/* .
-rm -rf subject subject.zip
+	wget https://cdn.intra.42.fr/document/document/33137/data_2023_feb.csv
+	wget https://cdn.intra.42.fr/document/document/42145/subject.zip
+	unzip subject.zip
+	mv ./subject/customer/* .
+	mv ./subject/item/* .
+	rm -rf subject subject.zip
+fi
 
 #since I'm not using docker for this project
 #we will need to check for the presence of psql
@@ -35,7 +37,8 @@ for file in data_test/data/data_202*.csv; do
 	[ -e "$file" ] || continue
 	echo "psql detected. Processing the command..."
 	# create the table's name
-	tablename=${file%.*}
+	tablename=${file##*/}; tablename=${tablename%.*}
+	echo $(basename "$file" .csv)
 	echo "Processing $tablename"
 	#executing SQL commands to create table
 	psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "
@@ -49,11 +52,12 @@ for file in data_test/data/data_202*.csv; do
 			user_session TEXT
 		);
 		-- copy from csv to table
-		COPY $tablename -- change to \copy
-		FROM '/var/lib/postgresql/data/downloaded/$tablename.csv'
-		DELIMITER ','
-		CSV HEADER;
+		-- COPY $tablename
+		-- FROM '/var/lib/postgresql/data/downloaded/$tablename.csv'
+		-- DELIMITER ','
+		-- CSV HEADER;
 	"
+	psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "\copy $tablename FROM "data_test/data/$tablename.csv" DELIMITER ',' CSV HEADER;"
 	#checking for empty string UNION_QUERY to build
 	#else UNION_ALL
 
