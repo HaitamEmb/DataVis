@@ -30,7 +30,7 @@ def get_min(values: list[float]) -> float :
 	n = len(values)
 	if n == 0:
 		return 0.0
-	return min(vlaues)
+	return min(values)
 
 #getting max
 def get_max(values: list[float]) -> float :

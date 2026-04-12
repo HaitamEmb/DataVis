@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import sys
 import psycopg2
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 from typing import Any
 from math_utilities import (
@@ -12,7 +13,10 @@ from math_utilities import (
 	get_50_quartile,
 	get_75_quartile,
 	get_median,
-	convert_to_float
+	get_min,
+	get_max,
+	convert_to_float,
+	get_std_population
 )
 
 def get_data() -> pd.DataFrame:
@@ -26,7 +30,7 @@ def get_data() -> pd.DataFrame:
 			port="5432",
 			database=os.getenv("POSTGRES_DB"),
 			user=os.getenv("POSTGRES_USER"),
-			password=os.getenv("POSTGRES_PASSWORD")
+			password=os.getenv("PGPASSWORD")
 		)
 
 		cmd: str=(
@@ -35,7 +39,7 @@ def get_data() -> pd.DataFrame:
 
 		cur = con.cursor()
 		cur.execute(cmd)
-		rows = cur.fetchall()
+		res = cur.fetchall()
 		return res
 	except Exception as error:
 		print(f"ERROR: {error}", file=sys.stderr)
@@ -71,13 +75,13 @@ def calculate_stats(values: list[float]) -> dict[str, float]:
 	}
 
 #print stats
-def print_stats(vlaues: list[float]) -> None:
+def print_stats(values: list[float]) -> None:
 	
 	assert values and isinstance(values, list), "Can't print stats"
 	stats = calculate_stats(values)
 	print("Statistics :")
 	print(f"{'count': <10} {stats['count']:>15f}")
-	print(f"{'mean': <10} {stats['cmean']:>15f}")
+	print(f"{'mean': <10} {stats['mean']:>15f}")
 	print(f"{'std': <10} {stats['std']:>15f}")
 	print(f"{'min': <10} {stats['min']:>15f}")
 	print(f"{'q1': <10} {stats['q1']:>15f}")
@@ -98,14 +102,14 @@ def box_plot(title:str, values:list[float], filename:str, facecolor:str, boundri
 		whiskerprops=dict(color="black"),
 		capprops=dict(color="black"),
 		flierprops=dict(
-			marker="0",
-			maekersize=3.5,
+			marker="o",
+			markersize=3.5,
 			markerfacecolor="black",
 			markeredgecolor="black",
 			alpha=0.8,
 		),
 	)
-	sbox.set_title(title. fontsize=14)
+	sbox.set_title(title)
 	sbox.set_yticks([])
 	sbox.set_ylabel("")
 	sbox.set_xlabel("price")
@@ -131,10 +135,10 @@ def plot_boxes(item_prices: list[float], basket_prices: list[float]) :
 		outliers=True,
 	)
 	stats = calculate_stats(item_prices)
-	iqr = stats["q3"] - stat["q1"]
+	iqr = stats["q3"] - stats["q1"]
 	outlier_up = stats["q3"] + 1.5 * iqr
 	if outlier_up <= 0:
-		outlier_up = stat["max"]
+		outlier_up = stats["max"]
 	
 	#price of the items purchased zoomed
 	box_plot(
@@ -156,16 +160,16 @@ def plot_boxes(item_prices: list[float], basket_prices: list[float]) :
 		outliers = True,
 	)
 
-	def main() -> int:
-		try:
-		env_path = path(__file__).resolve().parent / ".env"
+def main() -> int:
+	try:
+		env_path = Path(__file__).resolve().parent / ".env"
 		load_dotenv(
 			dotenv_path=env_path
 		)
 		if (
 			not os.getenv("POSTGRES_DB")
 			or not os.getenv("POSTGRES_USER")
-			or not os.getenv("POSTGRES_PASSWORD")
+			or not os.getenv("PGPASSWORD")
 		) :
 			print("Error: no or not all env variables set.", file=sys.stderr)
 			sys.exit(2)
@@ -177,13 +181,14 @@ def plot_boxes(item_prices: list[float], basket_prices: list[float]) :
 			user_id = row[2]
 			user_session = row[1]
 			value = convert_to_float(str(row[0]))
+			print(value)
 			if value is None:
 				continue
 			item_prices.append(value)
 			if user_session not in total:
 				total[user_session] = [user_id, 0.0]
 			total[user_session][1] += value
-		usr_sum: dict[int, float] = {}
+		user_sum: dict[int, float] = {}
 		user_count: dict[int, int] = {}
 		for session in total:
 			user = int(total[session][0])
